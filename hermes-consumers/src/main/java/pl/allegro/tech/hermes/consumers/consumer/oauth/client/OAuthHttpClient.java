@@ -9,6 +9,7 @@ import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpStatus;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessToken;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientFactory;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -23,8 +24,8 @@ public class OAuthHttpClient implements OAuthClient {
     private final ObjectMapper objectMapper;
 
     @Inject
-    public OAuthHttpClient(HttpClient httpClient, ObjectMapper objectMapper) {
-        this.httpClient = httpClient;
+    public OAuthHttpClient(HttpClientFactory httpClientFactory, ObjectMapper objectMapper) {
+        this.httpClient = httpClientFactory.provide();
         this.objectMapper = objectMapper;
     }
 
