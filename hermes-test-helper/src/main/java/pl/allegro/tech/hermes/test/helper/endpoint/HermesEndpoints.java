@@ -13,6 +13,8 @@ public class HermesEndpoints {
 
     private final TopicEndpoint topicEndpoint;
 
+    private final TopicWithSchemaEndpoint topicWithSchemaEndpoint;
+
     private final SubscriptionEndpoint subscriptionEndpoint;
 
     private final SchemaEndpoint schemaEndpoint;
@@ -32,6 +34,7 @@ public class HermesEndpoints {
     public HermesEndpoints(Hermes hermes) {
         this.groupEndpoint = hermes.createGroupEndpoint();
         this.topicEndpoint = hermes.createTopicEndpoint();
+        this.topicWithSchemaEndpoint = hermes.createTopicWithSchemaEndpoint();
         this.subscriptionEndpoint = hermes.createSubscriptionEndpoint();
         this.schemaEndpoint = hermes.createSchemaEndpoint();
         this.queryEndpoint = hermes.createQueryEndpoint();
@@ -58,6 +61,10 @@ public class HermesEndpoints {
 
     public TopicEndpoint topic() {
         return topicEndpoint;
+    }
+
+    public TopicWithSchemaEndpoint topicWithSchema() {
+        return topicWithSchemaEndpoint;
     }
 
     public SubscriptionEndpoint subscription() {
