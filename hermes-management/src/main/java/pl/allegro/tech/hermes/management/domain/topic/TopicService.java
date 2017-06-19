@@ -186,6 +186,10 @@ public class TopicService {
                 .collect(toList());
     }
 
+    public boolean topicExists(TopicName topicName) {
+        return topicRepository.topicExists(topicName);
+    }
+
     public List<Topic> queryTopic(Query<Topic> query) {
         return query
                 .filter(getAllTopics())

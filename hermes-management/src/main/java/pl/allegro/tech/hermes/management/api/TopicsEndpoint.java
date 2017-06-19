@@ -4,15 +4,32 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.api.*;
+import pl.allegro.tech.hermes.api.MessageTextPreview;
+import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.api.Query;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicMetrics;
+import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.BrokerNotFoundForPartitionException;
 import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
+import pl.allegro.tech.hermes.management.domain.topic.CreatorRights;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReaderException;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
 import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -35,7 +52,8 @@ public class TopicsEndpoint {
     private final ManagementRights managementRights;
 
     @Autowired
-    public TopicsEndpoint(TopicService topicService, ManagementRights managementRights) {
+    public TopicsEndpoint(TopicService topicService,
+                          ManagementRights managementRights) {
         this.topicService = topicService;
         this.managementRights = managementRights;
     }
@@ -70,8 +88,9 @@ public class TopicsEndpoint {
     @RolesAllowed(Roles.ANY)
     @ApiOperation(value = "Create topic", httpMethod = HttpMethod.POST)
     public Response create(Topic topic, @Context ContainerRequestContext requestContext) {
-        topicService.createTopic(topic, requestContext.getSecurityContext().getUserPrincipal().getName(),
-                checkedTopic -> managementRights.isUserAllowedToManageTopic(checkedTopic, requestContext));
+        String createdBy = requestContext.getSecurityContext().getUserPrincipal().getName();
+        CreatorRights isAllowedToManage = checkedTopic -> managementRights.isUserAllowedToManageTopic(checkedTopic, requestContext);
+        topicService.createTopic(topic, createdBy, isAllowedToManage);
         return status(Response.Status.CREATED).build();
     }
 
