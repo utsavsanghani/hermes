@@ -6,10 +6,8 @@ import com.github.tomakehurst.wiremock.client.UrlMatchingStrategy
 import com.github.tomakehurst.wiremock.client.WireMock
 import pl.allegro.tech.hermes.api.RawSchema
 import pl.allegro.tech.hermes.api.TopicName
-import pl.allegro.tech.hermes.schema.CouldNotFetchSchemaVersionException
-import pl.allegro.tech.hermes.schema.CouldNotFetchSchemaVersionsException
-import pl.allegro.tech.hermes.schema.CouldNotRegisterSchemaException
-import pl.allegro.tech.hermes.schema.CouldNotRemoveSchemaException
+import pl.allegro.tech.hermes.schema.BadSchemaRequestException
+import pl.allegro.tech.hermes.schema.InternalSchemaRepositoryException
 import pl.allegro.tech.hermes.schema.RawSchemaClient
 import pl.allegro.tech.hermes.schema.SchemaVersion
 import pl.allegro.tech.hermes.test.helper.util.Ports
@@ -76,7 +74,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         client.registerSchema(topicName, rawSchema)
 
         then:
-        def e = thrown(CouldNotRegisterSchemaException)
+        def e = thrown(BadSchemaRequestException)
         e.message.contains("Invalid schema")
     }
 
@@ -88,7 +86,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         client.registerSchema(topicName, rawSchema)
 
         then:
-        thrown(CouldNotRegisterSchemaException)
+        thrown(InternalSchemaRepositoryException)
     }
 
     def "should fetch schema at specified version"() {
@@ -114,8 +112,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         client.getSchema(topicName, SchemaVersion.valueOf(version))
 
         then:
-        def e = thrown(CouldNotFetchSchemaVersionException)
-        e.message.contains "3"
+        thrown(InternalSchemaRepositoryException)
     }
 
     def "should fetch latest schema version"() {
@@ -147,8 +144,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         client.getLatestSchema(topicName)
 
         then:
-        def e = thrown(CouldNotFetchSchemaVersionException)
-        e.message.contains "latest"
+        def e = thrown(InternalSchemaRepositoryException)
     }
 
     def "should return all schema versions"() {
@@ -180,7 +176,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         client.getVersions(topicName)
 
         then:
-        thrown(CouldNotFetchSchemaVersionsException)
+        thrown(InternalSchemaRepositoryException)
     }
 
     def "should delete all schema versions"() {
@@ -202,7 +198,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         client.deleteAllSchemaVersions(topicName)
 
         then:
-        thrown(CouldNotRemoveSchemaException)
+        thrown(BadSchemaRequestException)
     }
 
     private UrlMatchingStrategy versionsUrl(TopicName topic) {
