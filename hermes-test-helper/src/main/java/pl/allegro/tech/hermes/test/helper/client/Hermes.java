@@ -13,7 +13,6 @@ import pl.allegro.tech.hermes.api.endpoints.QueryEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SchemaEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SubscriptionEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.TopicEndpoint;
-import pl.allegro.tech.hermes.api.endpoints.TopicWithSchemaEndpoint;
 import pl.allegro.tech.hermes.consumers.ConsumerEndpoint;
 
 import javax.ws.rs.Path;
@@ -75,10 +74,6 @@ public class Hermes {
 
     public TopicEndpoint createTopicEndpoint() {
         return createProxy(url, TopicEndpoint.class, managementConfig);
-    }
-
-    public TopicWithSchemaEndpoint createTopicWithSchemaEndpoint() {
-        return createProxy(url, TopicWithSchemaEndpoint.class, managementConfig);
     }
 
     public SchemaEndpoint createSchemaEndpoint() {

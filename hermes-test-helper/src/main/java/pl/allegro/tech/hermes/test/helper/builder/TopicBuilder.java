@@ -5,6 +5,9 @@ import pl.allegro.tech.hermes.api.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
+import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithNoSchema;
+
 public class TopicBuilder {
 
     private final TopicName name;
@@ -59,6 +62,14 @@ public class TopicBuilder {
                 jsonToAvroDryRunEnabled, schemaVersionAwareSerialization, maxMessageSize,
                 new PublishingAuth(publishers, authEnabled, unauthenticatedAccessEnabled), subscribingRestricted
         );
+    }
+
+    public TopicWithSchema buildAsTopicWithSchema() {
+        return topicWithNoSchema(build());
+    }
+
+    public TopicWithSchema buildAsTopicWithSchema(String schema) {
+        return topicWithSchema(build(), schema);
     }
 
     public TopicBuilder withDescription(String description) {

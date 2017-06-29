@@ -7,8 +7,12 @@ import javax.ws.rs.core.Response;
 public class BadSchemaRequestException extends SchemaException {
 
     public BadSchemaRequestException(String subject, Response response) {
+        this(subject, response.getStatus(), response.readEntity(String.class));
+    }
+
+    public BadSchemaRequestException(String subject, int statusCode, String responseBody) {
         super(String.format("Bad schema request for subject %s, server response: %d %s",
-                subject, response.getStatus(), response.readEntity(String.class)));
+                subject, statusCode, responseBody));
     }
 
     @Override

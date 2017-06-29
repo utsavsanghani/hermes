@@ -1,7 +1,15 @@
 package pl.allegro.tech.hermes.test.helper.endpoint;
 
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.endpoints.*;
+import pl.allegro.tech.hermes.api.endpoints.BlacklistEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.GroupEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.MigrationEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.OAuthProviderEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.OwnerEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.QueryEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.SchemaEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.SubscriptionEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.TopicEndpoint;
 import pl.allegro.tech.hermes.consumers.ConsumerEndpoint;
 import pl.allegro.tech.hermes.test.helper.client.Hermes;
 
@@ -12,8 +20,6 @@ public class HermesEndpoints {
     private final GroupEndpoint groupEndpoint;
 
     private final TopicEndpoint topicEndpoint;
-
-    private final TopicWithSchemaEndpoint topicWithSchemaEndpoint;
 
     private final SubscriptionEndpoint subscriptionEndpoint;
 
@@ -34,7 +40,6 @@ public class HermesEndpoints {
     public HermesEndpoints(Hermes hermes) {
         this.groupEndpoint = hermes.createGroupEndpoint();
         this.topicEndpoint = hermes.createTopicEndpoint();
-        this.topicWithSchemaEndpoint = hermes.createTopicWithSchemaEndpoint();
         this.subscriptionEndpoint = hermes.createSubscriptionEndpoint();
         this.schemaEndpoint = hermes.createSchemaEndpoint();
         this.queryEndpoint = hermes.createQueryEndpoint();
@@ -61,10 +66,6 @@ public class HermesEndpoints {
 
     public TopicEndpoint topic() {
         return topicEndpoint;
-    }
-
-    public TopicWithSchemaEndpoint topicWithSchema() {
-        return topicWithSchemaEndpoint;
     }
 
     public SubscriptionEndpoint subscription() {

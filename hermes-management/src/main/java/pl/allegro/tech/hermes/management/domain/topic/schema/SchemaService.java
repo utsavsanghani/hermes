@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaValidator;
 import pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaValidatorProvider;
@@ -51,5 +52,9 @@ public class SchemaService {
             throw new SchemaRemovalDisabledException();
         }
         rawSchemaClient.deleteAllSchemaVersions(fromQualifiedName(qualifiedTopicName));
+    }
+
+    public void validateSchema(TopicName topic, String schema) {
+        rawSchemaClient.validateSchema(topic, RawSchema.valueOf(schema));
     }
 }

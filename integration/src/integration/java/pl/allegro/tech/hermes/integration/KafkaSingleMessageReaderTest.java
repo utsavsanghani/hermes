@@ -5,6 +5,7 @@ import net.javacrumbs.jsonunit.core.Option;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.test.HermesAssertions;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
@@ -63,10 +64,9 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     @Test
     public void shouldFetchSingleAvroMessage() throws IOException {
         // given
-        Topic topic = topic("avro.fetch")
-                .withContentType(AVRO).build();
-        operations.buildTopic(topic);
-        operations.saveSchema(topic, avroUser.getSchemaAsString());
+        TopicWithSchema topic = topic("avro.fetch")
+                .withContentType(AVRO).buildAsTopicWithSchema(avroUser.getSchemaAsString());
+        operations.buildTopicWithSchema(topic);
 
         Response response = publisher.publish(topic.getQualifiedName(), avroUser.asBytes());
         HermesAssertions.assertThat(response).hasStatus(CREATED);
@@ -84,11 +84,10 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     @Test
     public void shouldFetchSingleAvroMessageWithSchemaAwareSerialization() throws IOException {
         // given
-        Topic topic = topic("avro.fetchSchemaAwareSerialization")
+        TopicWithSchema topic = topic("avro.fetchSchemaAwareSerialization")
                 .withSchemaVersionAwareSerialization()
-                .withContentType(AVRO).build();
-        operations.buildTopic(topic);
-        operations.saveSchema(topic, avroUser.getSchemaAsString());
+                .withContentType(AVRO).buildAsTopicWithSchema(avroUser.getSchemaAsString());
+        operations.buildTopicWithSchema(topic);
 
         Response response = publisher.publish(topic.getQualifiedName(), avroUser.asBytes());
         HermesAssertions.assertThat(response).hasStatus(CREATED);

@@ -4,6 +4,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
+import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 
 import java.util.List;
@@ -18,6 +19,8 @@ import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.sub
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class QueryEndpointTest extends IntegrationTest {
+
+    private static final String SCHEMA = AvroUserSchemaLoader.load().toString();
 
     @DataProvider(name = "groupData")
     public static Object[][] groupData() {
@@ -67,12 +70,12 @@ public class QueryEndpointTest extends IntegrationTest {
     @Test(dataProvider = "topicData")
     public void shouldQueryTopic(String query, List<Integer> positions) {
         // given
-        Topic topic1 = operations.buildTopic(topic("testGroup1", "testTopic1").withContentType(AVRO).withTrackingEnabled(false).build());
-        Topic topic2 = operations.buildTopic(topic("testGroup1", "testTopic2").withContentType(JSON).withTrackingEnabled(false).build());
-        Topic topic3 = operations.buildTopic(topic("testGroup1", "testTopic3").withContentType(AVRO).withTrackingEnabled(true).build());
+        Topic topic1 = operations.buildTopicWithSchema(topic("testGroup1", "testTopic1").withContentType(AVRO).withTrackingEnabled(false).buildAsTopicWithSchema(SCHEMA)).getTopic();
+        Topic topic2 = operations.buildTopic(topic("testGroup1", "testTopic2").withContentType(JSON).withTrackingEnabled(false).build()).getTopic();
+        Topic topic3 = operations.buildTopicWithSchema(topic("testGroup1", "testTopic3").withContentType(AVRO).withTrackingEnabled(true).buildAsTopicWithSchema(SCHEMA)).getTopic();
         Topic topic4 = operations.buildTopic(topic("testGroup2", "testOtherTopic").withContentType(JSON).withTrackingEnabled(true)
                 .withOwner(new OwnerId("Plaintext", "Team Alpha")).build()
-        );
+        ).getTopic();
 
         List<Topic> topics = asList(topic1, topic2, topic3, topic4);
 
