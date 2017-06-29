@@ -22,12 +22,13 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
         $scope.config = topicConfig;
 
         topicRepository.get(topicName).then(function(topicWithSchema) {
-            $scope.topic = topicWithSchema.topic;
+            $scope.topic = topicWithSchema;
             $scope.topic.shortName = $scope.topic.name.substring($scope.topic.name.lastIndexOf('.') + 1);
             try {
                 $scope.messageSchema = topicWithSchema.schema ? JSON.stringify(JSON.parse(topicWithSchema.schema), null, 2) : null;
             } catch (e) {
-                console.error('Could not parse topic schema: ', e)
+                console.error('Could not parse topic schema: ', e);
+                $scope.messageSchema = '[schema parsing failure]';
             }
         });
 
@@ -87,10 +88,11 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                 passwordHint: 'root password'
             }).result.then(function (result) {
                     passwordService.setRoot(result.password);
+                    var topic = $scope.topic;
                     topicRepository.remove($scope.topic)
                         .then(function () {
                             toaster.pop('success', 'Success', 'Topic has been removed');
-                            if (!topicConfig.removeSchema) {
+                            if (!topicConfig.removeSchema && topic.contentType == 'AVRO') {
                                 toaster.pop('warning', 'Topic schema was not removed',
                                     'Note that schema was not removed for this topic. Schema is persisted in an external registry ' +
                                     'and its removal is disabled in this environment. Before creating topic with the same name make sure ' +

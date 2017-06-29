@@ -5,7 +5,7 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
@@ -41,10 +41,10 @@ public class FilteringAvroTest extends IntegrationTest {
     @Test
     public void shouldFilterIncomingEvents() {
         // given
-        final Topic topic = topic("filteredTopic.topic")
-                .withContentType(AVRO).build();
-        operations.buildTopic(topic);
-        operations.saveSchema(topic, AvroUserSchemaLoader.load().toString());
+        final String schema = AvroUserSchemaLoader.load().toString();
+        final TopicWithSchema topic = topic("filteredTopic.topic")
+                .withContentType(AVRO).buildAsTopicWithSchema(schema);
+        operations.buildTopicWithSchema(topic);
 
         final Subscription subscription = subscription(topic.getName(), "subscription")
                 .withEndpoint(HTTP_ENDPOINT_URL)
@@ -67,10 +67,10 @@ public class FilteringAvroTest extends IntegrationTest {
     @Test
     public void shouldChainMultipleFilters() {
         // given
-        final Topic topic = topic("filteredChainTopic.topic")
-                .withContentType(AVRO).build();
-        operations.buildTopic(topic);
-        operations.saveSchema(topic, AvroUserSchemaLoader.load().toString());
+        final String schema = AvroUserSchemaLoader.load().toString();
+        final TopicWithSchema topic = topic("filteredChainTopic.topic")
+                .withContentType(AVRO).buildAsTopicWithSchema(schema);
+        operations.buildTopicWithSchema(topic);
 
         final Subscription subscription = subscription(topic.getName(), "subscription")
                 .withEndpoint(HTTP_ENDPOINT_URL)

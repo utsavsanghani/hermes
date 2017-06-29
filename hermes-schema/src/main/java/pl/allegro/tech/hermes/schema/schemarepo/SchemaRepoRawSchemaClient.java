@@ -153,6 +153,11 @@ public class SchemaRepoRawSchemaClient implements RawSchemaClient {
         throw new UnsupportedOperationException("Deleting schemas is not supported by this repository type");
     }
 
+    @Override
+    public void validateSchema(TopicName topic, RawSchema rawSchema) {
+        // not implemented, let pass through
+    }
+
     private String parseSchema(String schemaResponse) {
         return schemaResponse.substring(1 + schemaResponse.indexOf('\t'));
     }

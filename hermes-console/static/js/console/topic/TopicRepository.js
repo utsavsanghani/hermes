@@ -3,7 +3,7 @@ var repository = angular.module('hermes.topic.repository', ['hermes.subscription
 repository.factory('TopicRepository', ['DiscoveryService', '$resource', '$location', 'SubscriptionRepository',
     function (discovery, $resource, $location, subscriptionRepository) {
 
-        var repository = $resource(discovery.resolve('/topics-with-schema/:name'), null, {update: {method: 'PUT'}});
+        var repository = $resource(discovery.resolve('/topics/:name'), null, {update: {method: 'PUT'}});
         var previewRepository = $resource(discovery.resolve('/topics/:name/preview'), null);
         var blacklistRepository = $resource(discovery.resolve('/blacklist/topics/:name'), null,
             { blacklist: { method: 'POST', url: discovery.resolve('/blacklist/topics') } });
@@ -15,13 +15,13 @@ repository.factory('TopicRepository', ['DiscoveryService', '$resource', '$locati
                 return repository.get({name: name}).$promise;
             },
             add: function (topic, schema) {
-                return repository.save({}, {topic: topic, schema: schema}).$promise;
+                return repository.save({}, angular.extend({}, topic, {"schema": schema})).$promise;
             },
             remove: function (topic) {
                 return repository.delete({name: topic.name}).$promise;
             },
             save: function (topic, schema) {
-                return repository.update({name: topic.name}, {topic: topic, schema: schema}).$promise;
+                return repository.update({name: topic.name}, angular.extend({}, topic, {"schema": schema})).$promise;
             },
             listSubscriptions: function (topicName) {
                 return subscriptionRepository.list(topicName);

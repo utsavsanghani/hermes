@@ -2,19 +2,23 @@ package pl.allegro.tech.hermes.integration.management;
 
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
-import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
+import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 
+import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class SchemaManagementTest extends IntegrationTest {
 
     private static final String EXAMPLE_SCHEMA = "\"string\"";
+
+    private static final String SCHEMA_V1 = AvroUserSchemaLoader.load().toString();
+
+    private static final String SCHEMA_V2 = AvroUserSchemaLoader.load("/schema/user_v2.avsc").toString();
 
     @Test
     public void shouldNotSaveSchemaForInvalidTopic() {
@@ -28,10 +32,10 @@ public class SchemaManagementTest extends IntegrationTest {
     @Test
     public void shouldSaveSchemaForExistingTopic() {
         // given
-        operations.buildAvroTopic("schemaGroup1", "schemaTopic1");
+        operations.buildTopicWithSchema(topic("schemaGroup1", "schemaTopic1").withContentType(AVRO).buildAsTopicWithSchema(SCHEMA_V1));
 
         // when
-        Response response = management.schema().save("schemaGroup1.schemaTopic1", EXAMPLE_SCHEMA);
+        Response response = management.schema().save("schemaGroup1.schemaTopic1", SCHEMA_V2);
 
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
@@ -40,8 +44,7 @@ public class SchemaManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnSchemaForTopic() {
         // given
-        operations.buildAvroTopic("schemaGroup2", "schemaTopic2");
-        management.schema().save("schemaGroup2.schemaTopic2", EXAMPLE_SCHEMA);
+        operations.buildTopicWithSchema(topic("schemaGroup2", "schemaTopic2").withContentType(AVRO).buildAsTopicWithSchema(EXAMPLE_SCHEMA));
 
         // when
         Response response = management.schema().get("schemaGroup2.schemaTopic2");
@@ -52,9 +55,6 @@ public class SchemaManagementTest extends IntegrationTest {
 
     @Test
     public void shouldRespondWithNoContentOnMissingSchema() {
-        // given
-        operations.buildAvroTopic("schemaGroup3", "schemaTopic3");
-
         // when
         Response response = management.schema().get("schemaGroup3.schemaTopic3");
 
@@ -65,12 +65,8 @@ public class SchemaManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnMethodNotAcceptableWhenRemovingSchemaIsDisabled() throws IOException {
         // given
-        AvroUser avroUser = new AvroUser();
-        Topic avroTopic = topic("avroGroup", "avroTopic")
-                .withContentType(ContentType.AVRO)
-                .build();
-        operations.buildTopic(avroTopic);
-        operations.saveSchema(avroTopic, avroUser.getSchemaAsString());
+        operations.buildTopicWithSchema(topic("avroGroup", "avroTopic").buildAsTopicWithSchema(EXAMPLE_SCHEMA));
+
 
         // when
         Response response = management.schema().delete("avroGroup.avroTopic");
@@ -82,12 +78,7 @@ public class SchemaManagementTest extends IntegrationTest {
     @Test
     public void shouldNotSaveInvalidAvroSchema() throws IOException {
         // given
-        AvroUser avroUser = new AvroUser();
-        Topic avroTopic = operations.buildTopic(topic("avroGroup", "avroTopic")
-                .withContentType(ContentType.AVRO)
-                .build()
-        );
-        operations.saveSchema(avroTopic, avroUser.getSchemaAsString());
+        operations.buildTopicWithSchema(topic("avroGroup", "avroTopic").buildAsTopicWithSchema(EXAMPLE_SCHEMA));
 
         // when
         Response response = management.schema().save("avroGroup.avroTopic", "{");

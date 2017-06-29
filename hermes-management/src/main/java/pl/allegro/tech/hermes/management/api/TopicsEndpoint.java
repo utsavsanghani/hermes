@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.api.MessageTextPreview;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.BrokerNotFoundForPartitionException;
@@ -87,10 +88,10 @@ public class TopicsEndpoint {
     @Produces(APPLICATION_JSON)
     @RolesAllowed(Roles.ANY)
     @ApiOperation(value = "Create topic", httpMethod = HttpMethod.POST)
-    public Response create(Topic topic, @Context ContainerRequestContext requestContext) {
+    public Response create(TopicWithSchema topicWithSchema, @Context ContainerRequestContext requestContext) {
         String createdBy = requestContext.getSecurityContext().getUserPrincipal().getName();
         CreatorRights isAllowedToManage = checkedTopic -> managementRights.isUserAllowedToManageTopic(checkedTopic, requestContext);
-        topicService.createTopic(topic, createdBy, isAllowedToManage);
+        topicService.createTopicWithSchema(topicWithSchema, createdBy, isAllowedToManage);
         return status(Response.Status.CREATED).build();
     }
 
@@ -100,7 +101,7 @@ public class TopicsEndpoint {
     @RolesAllowed({Roles.TOPIC_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Remove topic", httpMethod = HttpMethod.DELETE)
     public Response remove(@PathParam("topicName") String qualifiedTopicName, @Context SecurityContext securityContext) {
-        topicService.removeTopic(topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
+        topicService.removeTopicWithSchema(topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
                 securityContext.getUserPrincipal().getName());
         return status(Response.Status.OK).build();
     }
@@ -113,8 +114,8 @@ public class TopicsEndpoint {
     @ApiOperation(value = "Update topic", httpMethod = HttpMethod.PUT)
     public Response update(@PathParam("topicName") String qualifiedTopicName, PatchData patch,
                            @Context SecurityContext securityContext) {
-        topicService.updateTopic(TopicName.fromQualifiedName(qualifiedTopicName), patch,
-                securityContext.getUserPrincipal().getName());
+        String updatedBy = securityContext.getUserPrincipal().getName();
+        topicService.updateTopicWithSchema(TopicName.fromQualifiedName(qualifiedTopicName), patch, updatedBy);
         return status(Response.Status.OK).build();
     }
 
@@ -122,8 +123,8 @@ public class TopicsEndpoint {
     @Produces(APPLICATION_JSON)
     @Path("/{topicName}")
     @ApiOperation(value = "Topic details", httpMethod = HttpMethod.GET)
-    public Topic get(@PathParam("topicName") String qualifiedTopicName) {
-        return topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName));
+    public TopicWithSchema get(@PathParam("topicName") String qualifiedTopicName) {
+        return topicService.getTopicWithSchema(TopicName.fromQualifiedName(qualifiedTopicName));
     }
 
     @GET

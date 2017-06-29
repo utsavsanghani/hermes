@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.schema.confluent
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
 import com.github.tomakehurst.wiremock.client.UrlMatchingStrategy
@@ -41,7 +42,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         def port = Ports.nextAvailable()
         wireMock = new WireMockServer(port)
         wireMock.start()
-        client = new SchemaRegistryRawSchemaClient(ClientBuilder.newClient(), URI.create("http://localhost:$port"))
+        client = new SchemaRegistryRawSchemaClient(ClientBuilder.newClient(), URI.create("http://localhost:$port"), new ObjectMapper())
     }
 
     def cleanupSpec() {
@@ -201,6 +202,61 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         thrown(BadSchemaRequestException)
     }
 
+    def "should validate schema"() {
+        given:
+        wireMock.stubFor(post(schemaValidationUrl(topicName))
+                .willReturn(okResponse()
+                .withHeader("Content-type", "application/json")
+                .withBody("""{"is_compatible":true}""")))
+
+        when:
+        client.validateSchema(topicName, rawSchema)
+
+        then:
+        noExceptionThrown()
+        wireMock.verify(1, postRequestedFor(schemaValidationUrl(topicName))
+                .withHeader("Content-type", equalTo(schemaRegistryContentType))
+                .withRequestBody(equalTo("""{"schema":"{}"}""")))
+    }
+
+    def "should throw exception for incompatible schema"() {
+        given:
+        wireMock.stubFor(post(schemaValidationUrl(topicName))
+                .willReturn(okResponse()
+                .withHeader("Content-type", "application/json")
+                .withBody("""{"is_compatible":false}""")))
+
+        when:
+        client.validateSchema(topicName, rawSchema)
+
+        then:
+        thrown(BadSchemaRequestException)
+    }
+
+    def "should throw exception for 422 unprocessable entity response"() {
+        given:
+        wireMock.stubFor(post(schemaValidationUrl(topicName))
+                .willReturn(unprocessableEntityResponse()))
+
+        when:
+        client.validateSchema(topicName, rawSchema)
+
+        then:
+        thrown(BadSchemaRequestException)
+    }
+
+    def "should accept subject not found response as if schema is valid"() {
+        given:
+        wireMock.stubFor(post(schemaValidationUrl(topicName))
+                .willReturn(notFoundResponse()))
+
+        when:
+        client.validateSchema(topicName, rawSchema)
+
+        then:
+        noExceptionThrown()
+    }
+
     private UrlMatchingStrategy versionsUrl(TopicName topic) {
         urlEqualTo("/subjects/${topic.qualifiedName()}/versions")
     }
@@ -211,6 +267,10 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
     private UrlMatchingStrategy schemaLatestVersionUrl(TopicName topic) {
         urlEqualTo("/subjects/${topic.qualifiedName()}/versions/latest")
+    }
+
+    private UrlMatchingStrategy schemaValidationUrl(TopicName topic) {
+        urlEqualTo("/compatibility/subjects/${topic.qualifiedName()}/versions/latest")
     }
 
     private ResponseDefinitionBuilder okResponse() {
@@ -227,6 +287,10 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
     private ResponseDefinitionBuilder methodNotAllowedResponse() {
         aResponse().withStatus(405)
+    }
+
+    private ResponseDefinitionBuilder unprocessableEntityResponse() {
+        aResponse().withStatus(422)
     }
 
     private ResponseDefinitionBuilder internalErrorResponse() {
